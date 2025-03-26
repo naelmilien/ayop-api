@@ -1,16 +1,16 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('persons')
+@Entity()
 export class Person {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'first_name' })
+  @Column()
   firstName: string;
 
-  @Column({ name: 'last_name' })
+  @Column()
   lastName: string;
 
-  @Column({ name: 'date_of_birth' })
-  dob: string;
+  @Column()
+  birthDate: Date;
 }
