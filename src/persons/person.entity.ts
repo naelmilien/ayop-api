@@ -12,5 +12,5 @@ export class Person {
   lastName: string;
 
   @Column()
-  birthDate: string;
+  birthDate: Date;
 }
