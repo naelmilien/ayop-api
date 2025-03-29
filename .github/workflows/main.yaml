@@ -1,0 +1,52 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm run test
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker to use the correct project
+        run: |
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+          gcloud auth configure-docker --quiet
+
+      - name: Docker Build
+        run: docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/ayop-api:${{ github.sha }} .
+
+      - name: Docker Push
+        run: docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/ayop-api:${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+          image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/ayop-api:${{ github.sha }}
+          region: us-central1
+          service: ayop-api
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
