@@ -14,13 +14,13 @@ import { PersonsModule } from './persons/persons.module';
     PersonsModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT ? parseInt(process?.env?.DB_PORT) : 5432,
-      username: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: 'ayop_test',
+      host: process.env.PGHOST,
+      port: process.env.PGPORT ? parseInt(process.env.PGPORT) : 5432,
+      username: process.env.PGUSER,
+      password: process.env.PGPASSWORD,
+      database: process.env.PGDATABASE,
       entities: [Person],
-      synchronize: true,
+      synchronize: process.env.NODE_ENV === 'test',
       ssl:
         process.env.NODE_ENV === 'production'
           ? { rejectUnauthorized: false }
