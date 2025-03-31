@@ -1,33 +1,21 @@
-# --- Build Stage ---
-FROM node:22-alpine AS builder
-
-WORKDIR /app
-
-COPY package*.json ./
-
-RUN npm ci
-
-COPY . .
-
-RUN npm run build
-
-# --- Production Stage ---
+# Base image
 FROM node:22-alpine
 
+# Set working directory
 WORKDIR /app
 
-# Create a non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodejs -u 1001
+# Install deps
+COPY package*.json ./
+RUN npm ci
 
-# Copy only the necessary files from the build stage
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
+# Copy source and build
+COPY . .
+RUN npm run build
 
-# Set the user to the non-root user
+# Use non-root user
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 USER nodejs
 
+# Expose port and run
 EXPOSE 3000
-
 CMD ["node", "dist/main"]
